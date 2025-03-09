@@ -14,7 +14,7 @@ export default function Home() {
     cantidad: "",
   });
 
-  // Estado de visibilidad de columnas
+  // Estado de visibilidad de columnas (se agregaron las nuevas columnas)
   const [visibilidad, setVisibilidad] = useState({
     sku: true,
     nombre: true,
@@ -22,6 +22,9 @@ export default function Home() {
     costo: true,
     cantidad: true,
     valorStock: true,
+    utilidad: true,
+    unidadesVendidas: true,
+    montoVendido: true,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +65,10 @@ export default function Home() {
       return;
     }
 
-    const encabezados = ["SKU", "Nombre", "Precio", "Costo", "Cantidad"];
+    const encabezados = [
+      "SKU", "Nombre", "Precio", "Costo", "Cantidad",
+      "Valor Stock", "Utilidad", "Unidades Vendidas", "Monto Vendido"
+    ];
 
     const filas = productos.map(producto => [
       producto.sku,
@@ -70,6 +76,10 @@ export default function Home() {
       producto.precio,
       producto.costo,
       producto.cantidad,
+      Math.round(producto.costo * producto.cantidad),
+      Math.round((producto.precio - producto.costo) * producto.cantidad),
+      producto.cantidad,
+      Math.round(producto.precio * producto.cantidad),
     ]);
 
     const csvContent = [encabezados, ...filas]
@@ -85,13 +95,7 @@ export default function Home() {
       });
   };
 
-  const calcularValorStock = () => {
-    return productos.reduce((total, producto) => {
-      return total + producto.costo * producto.cantidad;
-    }, 0);
-  };
-
-  // Cambia el estado de visibilidad de columnas
+  // Función para cambiar la visibilidad de columnas
   const toggleColumna = (col: keyof typeof visibilidad) => {
     setVisibilidad({ ...visibilidad, [col]: !visibilidad[col] });
   };
@@ -192,15 +196,15 @@ export default function Home() {
                 {visibilidad.precio && <th className="py-3 px-6 text-center">Precio</th>}
                 {visibilidad.costo && <th className="py-3 px-6 text-center">Costo</th>}
                 {visibilidad.cantidad && <th className="py-3 px-6 text-center">Cantidad</th>}
-                {visibilidad.valorStock && <th className="py-3 px-6 text-center">Valor en Stock</th>}
+                {visibilidad.valorStock && <th className="py-3 px-6 text-center">Valor Stock</th>}
+                {visibilidad.utilidad && <th className="py-3 px-6 text-center">Utilidad</th>}
+                {visibilidad.unidadesVendidas && <th className="py-3 px-6 text-center">Unidades Vendidas</th>}
+                {visibilidad.montoVendido && <th className="py-3 px-6 text-center">Monto Vendido</th>}
               </tr>
             </thead>
             <tbody className="text-gray-700 text-sm font-light">
               {productos.map((producto, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-200 hover:bg-gray-100"
-                >
+                <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
                   {visibilidad.sku && <td className="py-3 px-6 text-left">{producto.sku}</td>}
                   {visibilidad.nombre && <td className="py-3 px-6 text-left">{producto.nombre}</td>}
                   {visibilidad.precio && <td className="py-3 px-6 text-center">${producto.precio}</td>}
@@ -208,7 +212,22 @@ export default function Home() {
                   {visibilidad.cantidad && <td className="py-3 px-6 text-center">{producto.cantidad}</td>}
                   {visibilidad.valorStock && (
                     <td className="py-3 px-6 text-center">
-                      ${(producto.costo * producto.cantidad).toFixed(2)}
+                      ${Math.round(producto.costo * producto.cantidad)}
+                    </td>
+                  )}
+                  {visibilidad.utilidad && (
+                    <td className="py-3 px-6 text-center">
+                      ${Math.round((producto.precio - producto.costo) * producto.cantidad)}
+                    </td>
+                  )}
+                  {visibilidad.unidadesVendidas && (
+                    <td className="py-3 px-6 text-center">
+                      {producto.cantidad}
+                    </td>
+                  )}
+                  {visibilidad.montoVendido && (
+                    <td className="py-3 px-6 text-center">
+                      ${Math.round(producto.precio * producto.cantidad)}
                     </td>
                   )}
                 </tr>
@@ -223,7 +242,6 @@ export default function Home() {
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
   );
